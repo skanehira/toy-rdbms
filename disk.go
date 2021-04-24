@@ -23,10 +23,11 @@ func New() *DiskManager {
 
 // Open ファイルを開く
 func (d *DiskManager) Open(path string) error {
-	f, err := os.Create(path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	d.HeapFile = f
 
