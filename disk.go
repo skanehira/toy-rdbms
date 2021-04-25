@@ -27,7 +27,6 @@ func (d *DiskManager) Open(path string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	d.HeapFile = f
 
@@ -43,18 +42,19 @@ func (d *DiskManager) Open(path string) error {
 
 // AllocatePage 新しいページIDを採番する
 func (d *DiskManager) AllocatePage() PageID {
+	pageID := d.NextPageID
 	d.NextPageID++
-	return d.NextPageID
+	return pageID
 }
 
 // Read ページデータを読み出す
-func (d *DiskManager) Read(pageID PageID, data *[8]byte) error {
-	offset := int64(PAGE_SIZE * uint64(pageID))
+func (d *DiskManager) Read(pageID PageID, data *[]byte) error {
+	offset := int64(PAGE_SIZE * uint64(pageID)) // ファイルの先頭からのoffsetは指定したpageIDからPAGE_SIZE分
 	_, err := d.HeapFile.Seek(offset, 0)
 	if err != nil {
 		return err
 	}
-	_, err = d.HeapFile.Read(data[:])
+	_, err = d.HeapFile.Read(*data)
 	if err != nil {
 		return err
 	}
@@ -62,15 +62,20 @@ func (d *DiskManager) Read(pageID PageID, data *[8]byte) error {
 }
 
 // Write ページデータに書き出す
-func (d *DiskManager) Write(pageID PageID, data [8]byte) error {
-	offset := int64(PAGE_SIZE * uint64(pageID))
+func (d *DiskManager) Write(pageID PageID, data []byte) error {
+	offset := int64(PAGE_SIZE * uint64(pageID)) // ファイルの先頭からのoffsetは指定したpageIDからPAGE_SIZE分
 	_, err := d.HeapFile.Seek(offset, 0)
 	if err != nil {
 		return err
 	}
-	_, err = d.HeapFile.Write(data[:])
+	_, err = d.HeapFile.Write(data)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// Close ヒープファイルをClose
+func (d *DiskManager) Close() {
+	d.HeapFile.Close()
 }
