@@ -48,13 +48,9 @@ func (d *DiskManager) AllocatePage() PageID {
 }
 
 // Read ページデータを読み出す
-func (d *DiskManager) Read(pageID PageID, data *[]byte) error {
+func (d *DiskManager) Read(pageID PageID, data [PAGE_SIZE]byte) error {
 	offset := int64(PAGE_SIZE * uint64(pageID)) // ファイルの先頭からのoffsetは指定したpageIDからPAGE_SIZE分
-	_, err := d.HeapFile.Seek(offset, 0)
-	if err != nil {
-		return err
-	}
-	_, err = d.HeapFile.Read(*data)
+	_, err := d.HeapFile.ReadAt(data[:], offset)
 	if err != nil {
 		return err
 	}
@@ -62,13 +58,13 @@ func (d *DiskManager) Read(pageID PageID, data *[]byte) error {
 }
 
 // Write ページデータに書き出す
-func (d *DiskManager) Write(pageID PageID, data []byte) error {
+func (d *DiskManager) Write(pageID PageID, data [PAGE_SIZE]byte) error {
 	offset := int64(PAGE_SIZE * uint64(pageID)) // ファイルの先頭からのoffsetは指定したpageIDからPAGE_SIZE分
 	_, err := d.HeapFile.Seek(offset, 0)
 	if err != nil {
 		return err
 	}
-	_, err = d.HeapFile.Write(data)
+	_, err = d.HeapFile.Write(data[:])
 	if err != nil {
 		return err
 	}
