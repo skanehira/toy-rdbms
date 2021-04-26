@@ -108,7 +108,10 @@ func (bpm *BufferPollManager) FetchPage(pageID PageID) (*Buffer, error) {
 	buffer.PageID = pageID
 	buffer.IsDirty = false
 
-	bpm.Disk.Read(pageID, buffer.Page)
+	// 指定したページIDの中身をバッファに読み出す
+	if err := bpm.Disk.Read(pageID, buffer.Page); err != nil {
+		return nil, err
+	}
 	frame.UsageCount = 1
 
 	delete(bpm.PageTable, evictPageID)
